@@ -1,0 +1,6 @@
+{
+    "application_name": "My Node prod_app",
+    "mail": {
+        "host": "10.50.200"
+    }
+}

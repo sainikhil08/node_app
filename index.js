@@ -1,81 +1,35 @@
 const express=require("express");
-
+const auth=require("./middleware/authentication")
+const home=require("./routes/home")
+const courses=require("./routes/courses")
+const morgan=require("morgan")
+const debug=require("debug")("app:startup")
+const config=require("config")
 const Joi=require("joi")
 const app=express();
 
+// middleware function
 app.use(express.json())
-const courses=[
-    {id: 1, name: "AI"},
-    {id: 2, name: "ML"},
-    {id: 3, name: "DB"}
-]
-app.get("/",(req, res)=>{
-    res.send("hello world!!")
-})
+// built in middleware for static content
+app.use(express.static("public"))
+//using custom middleware func
+app.use(auth)
 
-app.get("/api/courses", (req,res)=>{
-    res.send(courses)
-})
-
-app.get("/api/courses/:id", (req,res)=>{
-    // read params
-    const course=courses.find(c=> c.id===parseInt(req.params.id))
-
-    if(!course) {
-        res.status(404).send("Course not found for given id: ", req.params.id);
-        return;
-    }
-
-    res.send(course)
-    //read query params
-    //res.send(req.query)
-})
-
-app.post("/api/courses", (req,res)=>{
-
-    const {error}=validateCourse(req.body)
-    if(error){
-        res.status(404).send(error);
-        return;
-    }
-
-    const course={id: courses.length+1, name: req.body.name};
-    courses.push(course);
-    res.send(course)
-})
-
-app.put("/api/courses/:id", (req,res)=>{
-
-    const course=courses.find(c=> c.id===parseInt(req.params.id))
-    if(!course) {
-        res.status(404).send("Course not found for given id: ", req.params.id);
-        return;
-    }
-
-    const {error}=validateCourse(req.body)
-    if(error){
-        res.status(404).send(error);
-        return;
-    }
-
-    course.name=req.body.name;
-    res.send(course)
-
-})
-
-app.delete("/api/courses/:id", (req,res)=>{
-
-    const course=courses.find(c=> c.id===parseInt(req.params.id))
-    if(!course) {
-        res.status(404).send("Course not found for given id: ", req.params.id);
-        return;
-    }
-
-    const idx=courses.indexOf(course);
-    courses.splice(idx,1);
-
-    res.send(req.params.id);
-})
+app.use("/", home)
+//
+app.use("/api/courses", courses)
+debug("server started....")
+// config pkg for managing configs for env
+console.log(`App name: ${config.get("application_name")}`)
+console.log(`host: ${config.get("mail.host")}`)
+console.log(`password: ${config.get("mail.password")}`)
+// enabling only in dev environment
+if(app.get("env")=="development"){
+// 3rd part middleware for logging http requests
+app.use(morgan("tiny"))
+//use debug instead of console.log for better control and separation
+debug("Morgan enabled..")
+}
 
 const port=process.env.PORT || 3000;
 app.listen(port, ()=>console.log(`Listening on port ${port}`));
