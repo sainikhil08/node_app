@@ -33,11 +33,3 @@ debug("Morgan enabled..")
 
 const port=process.env.PORT || 3000;
 app.listen(port, ()=>console.log(`Listening on port ${port}`));
-
-function validateCourse(course){
-    const schema=Joi.object({
-        name: Joi.string().min(2).required()
-    });
-
-    return schema.validate(course);
-}

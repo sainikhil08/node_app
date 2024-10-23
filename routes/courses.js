@@ -72,4 +72,12 @@ router.delete("/:id", (req,res)=>{
     res.send(req.params.id);
 })
 
+function validateCourse(course){
+    const schema=Joi.object({
+        name: Joi.string().min(2).required()
+    });
+
+    return schema.validate(course);
+}
+
 module.exports=router
